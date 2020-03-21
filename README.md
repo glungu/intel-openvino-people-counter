@@ -1,0 +1,1 @@
+# intel-openvino-people-counter
