@@ -7,7 +7,7 @@ Models were selected from the [Tensorflow Object Detection Model Zoo](https://gi
 * faster_rcnn_inception_v2_coco
 
 The SSD model had good latency (~155 microseconds per frame), but lacked accuracy and failed to detect some people in the video.
-Faster-RCNN had bigger latency (~889 microseconds per frame), but provided good accuracy for this project. Stably detecting a person in the frame when he/she was there and vise versa is important for counting duration, and detecting person enter/exit.
+Faster-RCNN had bigger latency (~889 microseconds per frame), but provided good accuracy for this project. Stably detecting a person in the frame when he/she was there and not detecting when he/she is not there, is important for counting duration and person enter/exit.
 
 ## Model Optimization
 The following three laters were unsupported by the core Model Optimizer:
@@ -22,6 +22,19 @@ python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py --input_model 
 ```
 
 ## Running without OpenVINO™ Toolkit
+Both models performance was measured for inference latency (per frame), memory utilization during inference. 
+
+| Model/Framework                             | Latency (microseconds)            | Memory (Mb) |
+| -----------------------------------         |:---------------------------------:| -------:|
+| ssd_inception_v2_coco (plain TF)            | 222                               | 538    |
+| ssd_inception_v2_coco (OpenVINO)            | 155                               | 329    |
+| faster_rcnn_inception_v2_coco (plain TF)    | 1280                              | 562    |
+| faster_rcnn_inception_v2_coco (OpenVINO)    | 889                               | 281    |
+
+Memory usage was measured with `free -m` (and then subtracting the value when no inference is running). Latencies were collected and averages calculated after video processing. Below are comparative latency graphs:
+
+OpenVINO optimized networks produced bounding boxes undistiguishable for the human eye from those inferred with pure Tensorflow, with all people correctly identified in the video. So, in this particular case the significant latency (1.44 times) and memory (up to 2 times) gains at almost no cost are well worth it.
+
 Run the pre-trained model without the use of the OpenVINO™ Toolkit. Compare the performance of the model with and without the use of the toolkit (size, speed, CPU overhead). What about differences in network needs and costs of using cloud services as opposed to at the edge?
 
 
