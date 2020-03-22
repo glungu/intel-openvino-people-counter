@@ -21,7 +21,7 @@ The process behind converting custom layers involves several options depending o
 * Replace sub-graph with different sub-graph
 * Offload calculation back to the tensorflow itself
 
-Thankfully, OpenVINO already contains extensions for custom layers used in [Tensorflow Object Detection Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md). These extensions are located in `<OpenVINO install dir>/deployment_tools/model_optimizer/extensions/front/tf`. The Model Optimizer option for providing extension config when converting Tensorflow model to OpenVINO IR format is `--tensorflow_use_custom_operations_config`. 
+Thankfully, OpenVINO already contains extensions for custom layers used in [Tensorflow Object Detection Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md). These extensions' configurations are located in `<OpenVINO install dir>/deployment_tools/model_optimizer/extensions/front/tf`. The Model Optimizer option for providing extension config when converting Tensorflow model to OpenVINO IR format is `--tensorflow_use_custom_operations_config`. 
 
 Since two of the TF Object Detection Zoo models were used in this project, two different extensions were used depending on the model:
 * [ssd_inception_v2_coco](http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_2018_01_28.tar.gz): ssd_v2_support.json
