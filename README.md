@@ -3,8 +3,8 @@
 ## Model Selection 
 Models were selected from the [Tensorflow Object Detection Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md). The following two model were tried:
 
-* ssd_inception_v2_coco
-* faster_rcnn_inception_v2_coco
+* [ssd_inception_v2_coco](http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_2018_01_28.tar.gz)
+* [faster_rcnn_inception_v2_coco](http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_v2_coco_2018_01_28.tar.gz)
 
 The SSD model had good latency (~155 microseconds per frame), but lacked accuracy and failed to detect some people in the video.
 Faster-RCNN had bigger latency (~889 microseconds per frame), but provided good accuracy for this project. Stably detecting a person in the frame when he/she was there and not detecting when he/she is not there, is important for counting duration and person enter/exit.
