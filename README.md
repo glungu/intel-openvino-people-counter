@@ -33,8 +33,7 @@ Both models performance was measured for inference latency (per frame), memory u
 
 Memory usage was measured with `free -m` (and then subtracting the value when no inference is running). Latencies were collected and averages calculated after video processing. Below are comparative latency graphs:
 
-![SSD](images/latency_compare_ssd.png)
-![Faster-RCNN](images/latency_compare_faster_rcnn.png)
+![Latency Compare](images/latencies_compare.png)
 
 OpenVINO optimized networks produced bounding boxes undistiguishable for the human eye from those inferred with pure Tensorflow, with all people correctly identified in the video. So, in this particular case the significant latency (1.44 times) and memory (up to 2 times) gains at almost no cost are well worth it.
 
