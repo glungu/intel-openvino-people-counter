@@ -7,8 +7,7 @@ Models were selected from the [Tensorflow Object Detection Model Zoo](https://gi
 * [ssd_inception_v2_coco](http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_2018_01_28.tar.gz)
 * [faster_rcnn_inception_v2_coco](http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_v2_coco_2018_01_28.tar.gz)
 
-The SSD model had good latency (~155 microseconds per frame), but lacked accuracy and failed to detect some people in the video.
-Faster-RCNN showed higher latency (~889 microseconds per frame), but provided good accuracy required for this project. Correctly detecting a person in the frame is important for detecting him/her enter to and exit from the scene, and thus the duration he/she spent in the scene.
+The SSD model had good latency (~155 microseconds per frame), but lacked accuracy and failed to detect some people in some of the video frames. Faster-RCNN showed higher latency (~889 microseconds per frame), but provided good accuracy required for this project. Correctly detecting a person in the frame is important for detecting him/her enter to and exit from the scene, and thus the duration he/she spent in the scene.
 
 ## Explaining Custom Layers
 
