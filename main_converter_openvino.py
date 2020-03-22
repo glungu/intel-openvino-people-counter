@@ -85,29 +85,21 @@ def infer_on_stream(args, client):
     :param client: MQTT client
     :return: None
     """
-
-    if args.input == '0':
-        print('Camera stream not supported')
-        return
-    elif args.input.endswith('.png'):
-        print('Images not supported')
-        return
-    elif not args.input.endswith('mp4'):
-        print('MP4 video files supported only')
-        return
-
     # Initialise the class
     infer_network = Network()
     # Set Probability threshold for detections
+    prob_threshold = args.prob_threshold
 
     if 'ssd' in args.model:
         model_type = 'SSD'
     elif 'faster_rcnn' in args.model:
         model_type = 'Faster-RCNN'
+    print('### Model type:', model_type)
 
     ### TODO: Load the model through `infer_network` ###
     infer_network.load_model(args.model)
     net_input_shape = infer_network.get_input_shape()
+    print('### Network input shape:', net_input_shape)
 
     ### TODO: Handle the input stream ###
     cap = cv2.VideoCapture(args.input)
@@ -117,6 +109,21 @@ def infer_on_stream(args, client):
     input_height = int(cap.get(4))
 
     in_shape = net_input_shape['image_tensor']
+
+    print('### Shapes:',
+          (input_width, input_height),
+          '->',
+          (in_shape[3], in_shape[2]))
+
+    print('### Threshold:', args.prob_threshold)
+
+    # Create a video writer for the output video
+    out = cv2.VideoWriter('out.mp4', 0x00000021, 30,
+                          (input_width, input_height))
+
+    t_start = datetime.datetime.now()
+    t_infer = []
+    print('### Start:', t_start)
 
     counter = 0
     duration = 0
@@ -137,10 +144,14 @@ def infer_on_stream(args, client):
 
         ### TODO: Pre-process the image as needed ###
         net_image = cv2.resize(frame, (in_shape[3], in_shape[2]))
+        # print('### Resize:', net_input.shape)
         net_image = net_image.transpose((2, 0, 1))
+        # print('### Transpose:', net_input.shape)
         net_image = net_image.reshape(1, *net_image.shape)
+        # print('### Reshape:', net_image.shape)
 
         ### TODO: Start asynchronous inference for specified request ###
+        t_start_infer = datetime.datetime.now()
 
         if model_type == 'SSD':
             net_input = {
@@ -156,6 +167,8 @@ def infer_on_stream(args, client):
 
         ### TODO: Wait for the result ###
         if infer_network.wait() == 0:
+            t_end_infer = datetime.datetime.now()
+            t_infer.append((t_end_infer - t_start_infer) / datetime.timedelta(milliseconds=1))
 
             ### TODO: Get the results of the inference request ###
             net_output = infer_network.get_output()
@@ -173,6 +186,8 @@ def infer_on_stream(args, client):
                     p2 = (int(box[2] * input_width), int(box[3] * input_height))
                     frame = cv2.rectangle(frame, p1, p2, (0, 0, 255), 3)
 
+            print(cnt, end='', flush=True)
+
             if cnt != counter:
                 counter_prev = counter
                 counter = cnt
@@ -188,7 +203,13 @@ def infer_on_stream(args, client):
                     counter_report = counter
                     duration_report = duration
                     if duration == 3 and counter > counter_prev:
+                        print()
+                        print('New appearance:', counter_prev, '->', counter)
                         counter_total += counter - counter_prev
+                    elif duration == 3 and counter < counter_prev:
+                        print()
+                        print('Disappearance:', counter_prev, '->', counter,
+                              'duration:', "{0:.3f}".format(duration_prev / 30.0), 'sec')
                 else:
                     duration_report += 1
 
@@ -205,12 +226,23 @@ def infer_on_stream(args, client):
                            qos=0, retain=False)
 
         ### TODO: Send the frame to the FFMPEG server ###
-        sys.stdout.buffer.write(frame)
-        sys.stdout.flush()
+        out.write(frame)
 
         ### TODO: Write an output image if `single_image_mode` ###
 
+    t_end = datetime.datetime.now()
+    print()
+    print('### Finished:', t_end)
+    print('### Video processed in:', (t_end - t_start))
+    print('### Total people counted:', counter_total)
+
+    # save inference latencies
+    np.savetxt("latency_openvino.csv",
+               np.asarray(t_infer),
+               delimiter=",")
+
     cap.release()
+    out.release()
     cv2.destroyAllWindows()
 
 
