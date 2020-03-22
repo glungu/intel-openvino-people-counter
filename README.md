@@ -71,7 +71,7 @@ Some of the potential use cases of the people counter app are as follows.
     * Raising alarm when total count of people is above certain number, e.g. 2, when expecting a gardener visit in the morning and Amazon delivery in the afternoon, but no-one else
     * Turn on high resolution recording every time a camera detects a person (or people) in the scene, should be good for recording criminal activity and/or identifying potential intruders, delivery package thieves etc
 
-## Assess Effects on End User Needs
+## End User Considerations
 
 Lighting, model accuracy, and camera focal length/image size have different effects on a deployed edge model. The potential effects of each of these are as follows:
 
