@@ -11,7 +11,7 @@ The SSD model had good latency (~155 microseconds per frame), but lacked accurac
 
 ## Explaining Custom Layers
 
-Any layer not listed as supported by OpenVINO is considered custom. The list of supported layers is quite extensive yet in some cases it may not be possible to avoid handling custom layers as they are present in the model. Some of the potential reasons:
+Any layer not listed as supported by OpenVINO is considered custom. The list of supported layers is quite extensive yet in some cases it may not be possible to avoid handling custom layers as they are present in the given model. Some of the potential reasons:
 * The model was obtained from an outside source 
 * The model or some of its layers were developed as part of research 
 * The model has state of the art architecture and is supposed to be used as is without modifications
