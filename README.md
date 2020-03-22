@@ -55,7 +55,7 @@ Latencies were collected and averages calculated after video processing. Below a
 OpenVINO optimized network produced bounding boxes indistiguishable for the human eye from those inferred with pure Tensorflow, with all people correctly identified in the video. So, in this particular case conversion to OpenVINO allowed us to achieve the project's goals with significant latency (1.44 times) and memory (up to 2 times) improvements.
 
 
-## Assess Model Use Cases
+## Potential Model Use Cases
 
 Some of the potential use cases of the people counter app are as follows.
 
