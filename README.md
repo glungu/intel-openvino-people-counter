@@ -1,5 +1,5 @@
 # intel-openvino-people-counter
-(Project Write-Up)
+Project Write-Up
 
 ## Model Selection 
 Models were selected from the [Tensorflow Object Detection Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md). The following two model were tried:
