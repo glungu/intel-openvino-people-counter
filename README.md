@@ -1,4 +1,5 @@
 # intel-openvino-people-counter
+(Project Write-Up)
 
 ## Model Selection 
 Models were selected from the [Tensorflow Object Detection Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md). The following two model were tried:
@@ -7,22 +8,37 @@ Models were selected from the [Tensorflow Object Detection Model Zoo](https://gi
 * [faster_rcnn_inception_v2_coco](http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_v2_coco_2018_01_28.tar.gz)
 
 The SSD model had good latency (~155 microseconds per frame), but lacked accuracy and failed to detect some people in the video.
-Faster-RCNN had bigger latency (~889 microseconds per frame), but provided good accuracy for this project. Stably detecting a person in the frame when he/she was there and not detecting when he/she is not there, is important for counting duration and person enter/exit.
+Faster-RCNN showed higher latency (~889 microseconds per frame), but provided good accuracy required for this project. Correctly detecting a person in the frame is important for detecting him/her enter to and exit from the scene, and thus the duration he/she spent in the scene.
 
-## Model Optimization
-The following three laters were unsupported by the core Model Optimizer:
-* Layer proposals is not supported
-* Layer Squeeze_3 is not supported
-* Layer detection_output is not supported
+## Explaining Custom Layers
 
-But with the use of OpenVINO's faster_rcnn_support extension, all layers were supported, and the TF Model was successfully converted in IR format by the Model Optimizer. The following command was used:
+Any layer not listed as supported by OpenVINO is considered custom. The list of supported layers is quite extensive yet in some cases it may not be possible to avoid handling custom layers as they are present in the model. Some of the potential reasons:
+* The model was obtained from an outside source 
+* The model or some of its layers were developed as part of research 
+* The model has state of the art architecture and is supposed to be used as is without modifications
 
+The process behind converting custom layers involves several options depending of the original framework. With tensorflow the options are:
+* Register custom layers as extensions
+* Replace sub-graph with different subgraph
+* Offload calculation back to the tensorflow itself
+
+Thankfully, OpenVINO already contains extensions for custom layers used in [Tensorflow Object Detection Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md). These extensions are located in `<OpenVINO install dir>/deployment_tools/model_optimizer/extensions/front/tf`. The Model Optimizer option for providing extension config when converting Tensorflow model to OpenVINO IR format is `--tensorflow_use_custom_operations_config`. 
+
+Since two of the TF Object Detection Zoo models were used in this project, two different extensions were used depending on the model:
+* [ssd_inception_v2_coco](http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_2018_01_28.tar.gz): ssd_v2_support.json
+* [faster_rcnn_inception_v2_coco](http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_v2_coco_2018_01_28.tar.gz): faster_rcnn_support.json
+
+The full Model Optimizer command for converting TF model to OpenVINO IR format is given below:
 ```sh
 python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py --input_model faster_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb --tensorflow_object_detection_api_pipeline_config faster_rcnn_inception_v2_coco_2018_01_28/pipeline.config --reverse_input_channels --tensorflow_use_custom_operations_config /opt/intel/openvino/deployment_tools/model_optimizer/extensions/front/tf/faster_rcnn_support.json
 ```
 
-## Running without OpenVINO™ Toolkit
-Both models performance was measured for inference latency (per frame), memory utilization during inference. 
+The operations in those custom layers are implemented (for CPU) in the following library: `<OpenVINO install dir>/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so`. This path should be used with `add_extension()` method of the Python API when initializing the network for inference with OpenVINO.
+
+
+## Comparing Model Performance
+
+Both models performance before and after conversion to Intermediate Representations was measured for inference latency (per frame) and memory utilization. 
 
 | Model/Framework                             | Latency (microseconds)            | Memory (Mb) |
 | -----------------------------------         |:---------------------------------:| -------:|
@@ -31,22 +47,37 @@ Both models performance was measured for inference latency (per frame), memory u
 | faster_rcnn_inception_v2_coco (plain TF)    | 1280                              | 562    |
 | faster_rcnn_inception_v2_coco (OpenVINO)    | 889                               | 281    |
 
-Memory usage was measured with `free -m` (and then subtracting the value when no inference is running). Latencies were collected and averages calculated after video processing. Below are comparative latency graphs:
+Memory usage was measured with `free -m` (simply by calculating the difference between used memory during inference and when inference process was stopped). 
+
+Latencies were collected and averages calculated after video processing. Below are comparative latency graphs:
 
 ![Latency Compare](images/latencies_compare.png)
 
-OpenVINO optimized networks produced bounding boxes undistiguishable for the human eye from those inferred with pure Tensorflow, with all people correctly identified in the video. So, in this particular case the significant latency (1.44 times) and memory (up to 2 times) gains at almost no cost are well worth it.
-
-Run the pre-trained model without the use of the OpenVINO™ Toolkit. Compare the performance of the model with and without the use of the toolkit (size, speed, CPU overhead). What about differences in network needs and costs of using cloud services as opposed to at the edge?
+OpenVINO optimized network produced bounding boxes indistiguishable for the human eye from those inferred with pure Tensorflow, with all people correctly identified in the video. So, in this particular case conversion to OpenVINO allowed us to achieve the project's goals with significant latency (1.44 times) and memory (up to 2 times) improvements.
 
 
-## Potential Use Cases
-* Retail Applications - count number of customers/visitors in the shop, the duration of their stay and locations they spent most time at. 
-    * For those that stayed longer, analyzing locations thay spent most their time at, can give hints to what products make people stay (people like them and/or want to know more about them)
-    * Check how often they come to the consultant to see how many consultant/employees should be in the shop at different times of the day. Can lead to better employees' schedules, part-time etc
-    * Analyze traffic of shoppers to know when more items should be in stock
+## Assess Model Use Cases
 
-As seen with SSD and Faster-RCNN Models, it is important to use model that produces good accuracy, because if the model switches many times from detecting/undetecting a person while he/she is still there, or confuses other objects with people, will lead to very inaccurate results and therefore, bad business decisions. Therefore model should be tested well and correct detection threshold should be selected.
+Some of the potential use cases of the people counter app are as follows.
 
-And, of course, lighting and camera resolution is important to get good quality of frames to infer from. Too low resolution, poor lighting will make it more difficult for a model to detect objects. If lighting or camera quality cannot be improved, one should consider transfer learning to re-train the model on the images with the particular resolution and lighting that is going to be used in production.
+* Retail Shops - count number of customers/visitors in the shop, the duration of their stay and locations they spent most time at. 
+    * For those that stayed longer, analyzing locations thay spent most their time at, can give hints to what products make people stay longer (people like them and/or want to know more about them)
+    * Check how often they come to the consultant or cashier to understand how many consultants/employees should be in the shop at different times of the day. Can lead to better employees' schedules, allow part-time shifts etc. which would lead to happier employees and optimized salary budget for the employer
+    * Analyze traffic of shoppers to know when more items should be in stock. This should greatly reduce amount of times when customer is turned away because item is not currently available, or when items currently not in demand are stacked in unreasonable amounts
+
+* Voting Room - count total number of voters to double-check the voter turnout numbers at the end of the day. This should reduce the possibility for errors or voter fraud at each particular booth.
+
+* Security Cameras - counting the number of people in the scene and raising an alarm/action when above certain number.
+    * Raising alarm when detecting any number of people > 0 on the scene, when no person should be allowed
+    * Raising alarm when total count of people is above certain numer, e.g. 2, when expecting a gardener visit in the morning and Amazon delivery in the afternoon, but nobody else
+    * Turn on high resolution recording every time a camera detects a person (or people) in the scene, should be good for recording criminal activity and/or identifying potential intruders, delivery package thieves etc
+
+## Assess Effects on End User Needs
+
+Lighting, model accuracy, and camera focal length/image size have different effects on a deployed edge model. The potential effects of each of these are as follows:
+
+* Lighting - some models may not identify a person if the lighting is inappropriate, e.g. too dim, not lighting on the face etc.
+* Model accuracy - lower accuracy models may detect a person on one frame, and not detect him/her in the next, even though they never left the scene, and then they may detect them again. This will lead to incorrect count of the duration people spent on the scene, and incorrect total count. This is exactly what happened in this project's video with [ssd_inception_v2_coco](http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_2018_01_28.tar.gz) model, and the reason why [faster_rcnn_inception_v2_coco](http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_v2_coco_2018_01_28.tar.gz) model was selected.
+* Camera focal length/image size - these greatly influence image quality and therefore the ability of the model to detect what it was trained to detect. In those cases when low quality camera cannot be replaced, and the model performs poorly on its footage, knowledge transfer with additional training on images from this particular camera should be considered.
+
 
