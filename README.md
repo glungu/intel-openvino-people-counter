@@ -76,7 +76,7 @@ Some of the potential use cases of the people counter app are as follows.
 
 Lighting, model accuracy, and camera focal length/image size have different effects on a deployed edge model. The potential effects of each of these are as follows:
 
-* Lighting - some models may not identify a person if the lighting is inappropriate, e.g. too dim, not lighting on the face etc.
+* Lighting - some models may not identify a person if the lighting is inappropriate, e.g. too dim, insufficient light on the face etc.
 * Model accuracy - lower accuracy models may detect a person on one frame, and not detect him/her in the next, even though they never left the scene, and then they may detect them again. This will lead to incorrect count of the duration people spent on the scene, and incorrect total count. This is exactly what happened in this project's video with [ssd_inception_v2_coco](http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_2018_01_28.tar.gz) model, and the reason why [faster_rcnn_inception_v2_coco](http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_v2_coco_2018_01_28.tar.gz) model was selected.
 * Camera focal length/image size - these greatly influence image quality and therefore the ability of the model to detect what it was trained to detect. In those cases when low quality camera cannot be replaced, and the model performs poorly on its footage, knowledge transfer with additional training on images from this particular camera should be considered.
 
