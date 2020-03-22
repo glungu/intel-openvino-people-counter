@@ -18,7 +18,7 @@ Any layer not listed as supported by OpenVINO is considered custom. The list of 
 
 The process behind converting custom layers involves several options depending of the original framework. With tensorflow the options are:
 * Register custom layers as extensions
-* Replace sub-graph with different subgraph
+* Replace sub-graph with different sub-graph
 * Offload calculation back to the tensorflow itself
 
 Thankfully, OpenVINO already contains extensions for custom layers used in [Tensorflow Object Detection Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md). These extensions are located in `<OpenVINO install dir>/deployment_tools/model_optimizer/extensions/front/tf`. The Model Optimizer option for providing extension config when converting Tensorflow model to OpenVINO IR format is `--tensorflow_use_custom_operations_config`. 
