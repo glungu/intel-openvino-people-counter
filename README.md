@@ -1,5 +1,6 @@
 # intel-openvino-people-counter
 Project Write-Up
+
 Project Notes with useful commands can be found [here](NOTES.md)
 
 ## Model Selection 
