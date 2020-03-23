@@ -40,7 +40,7 @@ python main.py -i resources/Pedestrian_Detect_2_1_1.mp4 -m model/faster_rcnn_inc
 * `--output_dir` - Output dir for OpenVINO IR files
 * `--tensorflow_object_detection_api_pipeline_config` - Tensorflow pipeline.config file 
 * `--reverse_input_channels` (BGR to RGB)
-* `--tensorflow_use_custom_operations_config` - OpenVINO Tensorflow extension
+* `--tensorflow_use_custom_operations_config` - OpenVINO Tensorflow extension config
 
 Example command for SSD model:     
 ```commandline
