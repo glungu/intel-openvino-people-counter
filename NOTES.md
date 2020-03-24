@@ -26,12 +26,12 @@ npm run dev
 ## Application
 Converting the video for debugging purposes:
 ```commandline
-python main_converter_openvino.py -i resources/Pedestrian_Detect_2_1_1.mp4 -pt 0.2 -m model/faster_rcnn_inception_v2_coco.xml 
+python main_converter_openvino.py -i resources/Pedestrian_Detect_2_1_1.mp4 -pt 0.4 -m model/faster_rcnn_inception_v2_coco.xml 
 ```
 
 Run application to send stats to MQTT and frames to stdout (for ffserver): 
 ```commandline
-python main.py -i resources/Pedestrian_Detect_2_1_1.mp4 -m model/faster_rcnn_inception_v2_coco.xml -l /opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU -pt 0.2 | ffmpeg -v warning -f rawvideo -pixel_format bgr24 -video_size 768x432 -framerate 24 -i - http://0.0.0.0:3004/fac.ffm
+python main.py -i resources/Pedestrian_Detect_2_1_1.mp4 -m model/faster_rcnn_inception_v2_coco.xml -l /opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU -pt 0.4 | ffmpeg -v warning -f rawvideo -pixel_format bgr24 -video_size 768x432 -framerate 24 -i - http://0.0.0.0:3004/fac.ffm
 ```
 
 ## OpenVINO Model Optimizer options

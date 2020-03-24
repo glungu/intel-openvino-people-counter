@@ -133,7 +133,6 @@ def infer_on_stream(args, client):
 
     counter_total = 0
     counter_report = 0
-    duration_report = 0
 
     ### TODO: Loop until stream is over ###
     while cap.isOpened():
@@ -162,6 +161,8 @@ def infer_on_stream(args, client):
                 'image_tensor': net_image,
                 'image_info': net_image.shape[1:]
             }
+
+        duration_report = None
 
         infer_network.exec_net(net_input)
 
@@ -201,17 +202,14 @@ def infer_on_stream(args, client):
                 duration += 1
                 if duration >= 3:
                     counter_report = counter
-                    duration_report = duration
                     if duration == 3 and counter > counter_prev:
                         print()
-                        print('New appearance:', counter_prev, '->', counter)
+                        print('Enter:', counter_prev, '->', counter)
                         counter_total += counter - counter_prev
                     elif duration == 3 and counter < counter_prev:
                         print()
-                        print('Disappearance:', counter_prev, '->', counter,
-                              'duration:', "{0:.3f}".format(duration_prev / 30.0), 'sec')
-                else:
-                    duration_report += 1
+                        print('Exit:', counter_prev, '->', counter)
+                        duration_report = int((duration_prev / 10.0) * 1000)
 
             ### TODO: Calculate and send relevant information on ###
             ### current_count, total_count and duration to the MQTT server ###
@@ -221,9 +219,12 @@ def infer_on_stream(args, client):
                            payload=json.dumps({
                                'count': counter_report, 'total': counter_total}),
                            qos=0, retain=False)
-            client.publish('person/duration',
-                           payload=json.dumps({'duration': duration_report}),
-                           qos=0, retain=False)
+            if duration_report is not None:
+                client.publish('person/duration',
+                               payload=json.dumps({'duration': duration_report}),
+                               qos=0, retain=False)
+                print()
+                print('Reporting duration:', duration_report, 'ms')
 
         ### TODO: Send the frame to the FFMPEG server ###
         out.write(frame)

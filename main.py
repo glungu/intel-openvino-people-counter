@@ -135,7 +135,6 @@ def process_video(args, infer_network, infer_network_shape, model_type):
     duration_prev = 0
     counter_total = 0
     counter_report = 0
-    duration_report = 0
 
     # Loop until stream is over
     while cap.isOpened():
@@ -148,6 +147,9 @@ def process_video(args, infer_network, infer_network_shape, model_type):
         frame, cnt = infer_on_image(frame, frame_shape, model_type,
                                     infer_network, infer_network_shape,
                                     args.prob_threshold)
+
+        # report duration only once (when person exits scene)
+        duration_report = None
 
         # detection only if continues 3 frames or more
         if cnt != counter:
@@ -163,11 +165,12 @@ def process_video(args, infer_network, infer_network_shape, model_type):
             duration += 1
             if duration >= 3:
                 counter_report = counter
-                duration_report = duration
                 if duration == 3 and counter > counter_prev:
+                    # count as enter scene
                     counter_total += counter - counter_prev
-            else:
-                duration_report += 1
+                if duration == 3 and counter < counter_prev:
+                    # count as exit scene, report duration in ms (note: FPS = 10)
+                    duration_report = int((duration_prev / 10.0) * 1000)
 
         # Calculate and send relevant information on
         # current_count, total_count and duration to the MQTT server
@@ -177,9 +180,10 @@ def process_video(args, infer_network, infer_network_shape, model_type):
                             payload=json.dumps({
                                 'count': counter_report, 'total': counter_total}),
                             qos=0, retain=False)
-        client_mqtt.publish('person/duration',
-                            payload=json.dumps({'duration': duration_report}),
-                            qos=0, retain=False)
+        if duration_report is not None:
+            client_mqtt.publish('person/duration',
+                                payload=json.dumps({'duration': duration_report}),
+                                qos=0, retain=False)
 
         # Send the frame to the FFMPEG server
         sys.stdout.buffer.write(frame)
