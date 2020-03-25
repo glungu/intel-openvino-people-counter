@@ -185,6 +185,10 @@ def process_video(args, infer_network, infer_network_shape, model_type):
                                 payload=json.dumps({'duration': duration_report}),
                                 qos=0, retain=False)
 
+        # Attention! Resize to cover for potential bug in the UI
+        # Video size is 768x432, but the UI expects 758x432
+        frame = cv2.resize(frame, (758, 432))
+
         # Send the frame to the FFMPEG server
         sys.stdout.buffer.write(frame)
         sys.stdout.flush()

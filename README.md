@@ -82,3 +82,17 @@ Lighting, model accuracy, and camera focal length/image size have different effe
 * Camera focal length/image size - these greatly influence image quality and therefore the ability of the model to detect what it was trained to detect. In those cases when low quality camera cannot be replaced, and the model performs poorly on its footage, knowledge transfer with additional training on images from this particular camera should be considered.
 
 
+## Application Screenshots
+
+These give the application UI outlook during video processing:
+
+![screenshot-1](images/app-screenshot-1.png)
+
+![screenshot-2](images/app-screenshot-2.png)
+
+After video processing, the average duration is 17 seconds, 
+and the total people count is 6:
+
+![screenshot-3](images/app-screenshot-3.png)
+
+

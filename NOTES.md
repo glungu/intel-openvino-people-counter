@@ -24,15 +24,24 @@ npm run dev
 ```
 
 ## Application
+
+Run application to send stats to MQTT and frames to stdout for ffserver. 
+Note: `-video_size 758x432`, not the size of original video `768x432`. 
+(This is due to potential bug in the UI application, hopefully will be fixed by the time it is released). 
+```commandline
+python main.py -i resources/Pedestrian_Detect_2_1_1.mp4 -m model/faster_rcnn_inception_v2_coco.xml -l /opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU -pt 0.4 | ffmpeg -v warning -f rawvideo -pixel_format bgr24 -video_size 758x432 -framerate 24 -i - http://0.0.0.0:3004/fac.ffm
+```
+
 Converting the video for debugging purposes:
 ```commandline
 python main_converter_openvino.py -i resources/Pedestrian_Detect_2_1_1.mp4 -pt 0.4 -m model/faster_rcnn_inception_v2_coco.xml 
 ```
 
-Run application to send stats to MQTT and frames to stdout (for ffserver): 
+Converting image
 ```commandline
-python main.py -i resources/Pedestrian_Detect_2_1_1.mp4 -m model/faster_rcnn_inception_v2_coco.xml -l /opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU -pt 0.4 | ffmpeg -v warning -f rawvideo -pixel_format bgr24 -video_size 768x432 -framerate 24 -i - http://0.0.0.0:3004/fac.ffm
+python main.py -i images/people-counter-image2.png -pt 0.4 -m model/faster_rcnn_inception_v2_coco.xml
 ```
+
 
 ## OpenVINO Model Optimizer options
  

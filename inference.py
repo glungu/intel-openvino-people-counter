@@ -45,7 +45,7 @@ class Network:
         self.exec_network = None
         self.infer_request = None
 
-    def load_model(self, model):
+    def load_model(self, model, console_output=False):
         ### TODO: Load the model ###
         model_xml = model
         model_bin = os.path.splitext(model_xml)[0] + ".bin"
@@ -53,15 +53,18 @@ class Network:
         self.plugin = IECore()
         self.network = IENetwork(model=model_xml, weights=model_bin)
 
-        if not all_layers_supported(self.plugin, self.network):
-            print('### Adding cpu extension...')
+        if not all_layers_supported(self.plugin, self.network, console_output=console_output):
+            if console_output:
+                print('### Adding cpu extension...')
             self.plugin.add_extension(CPU_EXTENSION, CPU_DEVICE)
-            if not all_layers_supported(self.plugin, self.network):
-                print('ERROR: Not all layers supported with extension!')
+            if not all_layers_supported(self.plugin, self.network, console_output=console_output):
+                if console_output:
+                    print('ERROR: Not all layers supported with extension!')
                 return
 
         self.exec_network = self.plugin.load_network(self.network, CPU_DEVICE)
-        print('### Network loaded successfully!')
+        if console_output:
+            print('### Network loaded successfully!')
 
         # Get the input layer
         self.input_blob = next(iter(self.network.inputs))
@@ -109,7 +112,7 @@ class Network:
         return res
 
 
-def all_layers_supported(engine, network):
+def all_layers_supported(engine, network, console_output=False):
     ### TODO check if all layers are supported
     ### return True if all supported, False otherwise
     layers_supported = engine.query_network(network, device_name='CPU')
@@ -119,7 +122,8 @@ def all_layers_supported(engine, network):
     for l in layers:
         if l not in layers_supported:
             all_supported = False
-            print('### Layer', l, 'is not supported')
-    if all_supported:
+            if console_output:
+                print('### Layer', l, 'is not supported')
+    if all_supported and console_output:
         print('### All layers supported!')
     return all_supported
