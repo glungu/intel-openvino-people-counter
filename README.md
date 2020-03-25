@@ -82,9 +82,17 @@ Lighting, model accuracy, and camera focal length/image size have different effe
 * Camera focal length/image size - these greatly influence image quality and therefore the ability of the model to detect what it was trained to detect. In those cases when low quality camera cannot be replaced, and the model performs poorly on its footage, knowledge transfer with additional training on images from this particular camera should be considered.
 
 
-## Application Screenshots
+## Application Run
 
-These give the application UI outlook during video processing:
+Application is run with the following command. Note: `-video_size 758x432`, 
+not the size of original video `768x432` (shall be fixed soon in the UI).
+```commandline
+python main.py -i resources/Pedestrian_Detect_2_1_1.mp4 -m model/faster_rcnn_inception_v2_coco.xml -l /opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU -pt 0.4 | ffmpeg -v warning -f rawvideo -pixel_format bgr24 -video_size 758x432 -framerate 24 -i - http://0.0.0.0:3004/fac.ffm
+```
+The above command assumes ffserver, MQTT server, and the UI application are up and running.
+For more details, see [Project Notes](NOTES.md)  
+
+Below is the application UI outlook during video processing:
 
 ![screenshot-1](images/app-screenshot-1.png)
 
